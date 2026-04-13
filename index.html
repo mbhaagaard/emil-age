@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Emils alder</title>
+  <meta name="description" content="Emils faktiske, korrigerede og høre-alder." />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --bg-elev: #1a1d24;
+      --border: #262a33;
+      --text: #e7e9ee;
+      --muted: #9aa3b2;
+      --accent: #7cd4c4;
+      --accent-soft: rgba(124, 212, 196, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+
+    body {
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(124, 212, 196, 0.08), transparent 60%),
+        radial-gradient(900px 500px at 110% 10%, rgba(140, 120, 255, 0.06), transparent 60%),
+        var(--bg);
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 3.25rem);
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: clamp(0.9rem, 2vw, 1.25rem);
+    }
+
+    .card {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: clamp(1.25rem, 3vw, 1.75rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: #34394a;
+      }
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--text);
+    }
+
+    .card .from {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .values {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: auto;
+    }
+
+    .metric-row {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .metric {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+
+    .metric .num {
+      font-size: clamp(2.4rem, 7vw, 3.2rem);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .metric .unit {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .pending {
+      color: var(--text);
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    .pending .num {
+      color: var(--accent);
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Emil</h1>
+    </header>
+
+    <section class="grid" id="grid">
+      <article class="card" data-ref="2025-11-27" data-key="actual">
+        <h2>Faktisk alder</h2>
+        <p class="from">Fra 27. november 2025</p>
+        <div class="values"></div>
+      </article>
+
+      <article class="card" data-ref="2026-01-11" data-key="corrected">
+        <h2>Korrigeret alder</h2>
+        <p class="from">Fra termin, 11. januar 2026</p>
+        <div class="values"></div>
+      </article>
+
+      <article class="card" data-ref="2026-04-22" data-key="hearing">
+        <h2>Høre-alder</h2>
+        <p class="from">Fra høreapparater, 22. april 2026</p>
+        <div class="values"></div>
+      </article>
+    </section>
+
+    <footer>
+      <span id="updated"></span>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      function parseISO(s) {
+        var parts = s.split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+
+      function startOfDay(d) {
+        return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+
+      function diffDays(from, to) {
+        var ms = startOfDay(to) - startOfDay(from);
+        return Math.floor(ms / 86400000);
+      }
+
+      function diffWeeks(from, to) {
+        return Math.floor(diffDays(from, to) / 7);
+      }
+
+      function diffMonths(from, to) {
+        var months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+        if (to.getDate() < from.getDate()) months -= 1;
+        return Math.max(0, months);
+      }
+
+      function weekWord(n) { return n === 1 ? 'uge' : 'uger'; }
+      function monthWord(n) { return n === 1 ? 'måned' : 'måneder'; }
+      function dayWord(n) { return n === 1 ? 'dag' : 'dage'; }
+
+      function renderAge(container, ref, now) {
+        var totalDays = diffDays(ref, now);
+        var weeks = Math.floor(totalDays / 7);
+        var days = totalDays % 7;
+        var months = diffMonths(ref, now);
+        container.innerHTML =
+          '<div class="metric-row">' +
+            '<div class="metric"><span class="num">' + weeks + '</span>' +
+            '<span class="unit">' + weekWord(weeks) + '</span></div>' +
+            '<div class="metric"><span class="num">' + days + '</span>' +
+            '<span class="unit">' + dayWord(days) + '</span></div>' +
+          '</div>' +
+          '<div class="metric-row">' +
+            '<div class="metric"><span class="num">' + months + '</span>' +
+            '<span class="unit">' + monthWord(months) + '</span></div>' +
+          '</div>';
+      }
+
+      function renderCountdown(container, ref, now) {
+        var days = diffDays(now, ref);
+        container.innerHTML =
+          '<div class="pending">Starter om <span class="num">' + days + '</span> ' + dayWord(days) + '</div>';
+      }
+
+      function formatUpdated(d) {
+        var months = ['januar','februar','marts','april','maj','juni','juli','august','september','oktober','november','december'];
+        var hh = String(d.getHours()).padStart(2, '0');
+        var mm = String(d.getMinutes()).padStart(2, '0');
+        return 'Opdateret ' + d.getDate() + '. ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' kl. ' + hh + ':' + mm;
+      }
+
+      var now = new Date();
+      var cards = document.querySelectorAll('.card');
+      cards.forEach(function (card) {
+        var ref = parseISO(card.getAttribute('data-ref'));
+        var values = card.querySelector('.values');
+        if (startOfDay(now) < startOfDay(ref)) {
+          renderCountdown(values, ref, now);
+        } else {
+          renderAge(values, ref, now);
+        }
+      });
+
+      var updated = document.getElementById('updated');
+      if (updated) updated.textContent = formatUpdated(now);
+    })();
+  </script>
+</body>
+</html>

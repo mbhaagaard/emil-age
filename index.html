@@ -201,6 +201,16 @@
         return Math.max(0, months);
       }
 
+      function diffHalfMonths(from, to) {
+        var full = diffMonths(from, to);
+        var anniv = new Date(from.getFullYear(), from.getMonth() + full, from.getDate());
+        return diffDays(anniv, to) >= 15 ? full + 0.5 : full;
+      }
+
+      function formatHalf(n) {
+        return n % 1 === 0 ? String(n) : n.toFixed(1).replace('.', ',');
+      }
+
       function weekWord(n) { return n === 1 ? 'uge' : 'uger'; }
       function monthWord(n) { return n === 1 ? 'måned' : 'måneder'; }
       function dayWord(n) { return n === 1 ? 'dag' : 'dage'; }
@@ -209,7 +219,7 @@
         var totalDays = diffDays(ref, now);
         var weeks = Math.floor(totalDays / 7);
         var days = totalDays % 7;
-        var months = diffMonths(ref, now);
+        var months = diffHalfMonths(ref, now);
         container.innerHTML =
           '<div class="metric-row">' +
             '<div class="metric"><span class="num">' + weeks + '</span>' +
@@ -218,7 +228,7 @@
             '<span class="unit">' + dayWord(days) + '</span></div>' +
           '</div>' +
           '<div class="metric-row">' +
-            '<div class="metric"><span class="num">' + months + '</span>' +
+            '<div class="metric"><span class="num">' + formatHalf(months) + '</span>' +
             '<span class="unit">' + monthWord(months) + '</span></div>' +
           '</div>';
       }
